@@ -44,8 +44,15 @@ resource "aws_sfn_state_machine" "api_pipeline" {
   })
 }
 
+#6. EVENTBRIDGE RULE - Creates a scheduler. Automatically triggers pipeline.
 resource "aws_cloudwatch_event_rule" "daily_run" {
 
   name                = "api-etl-daily"
   schedule_expression = "cron(0 2 * * ? *)"
+}
+
+resource "aws_cloudwatch_event_target" "step_function_target" {
+  rule     = aws_cloudwatch_event_rule.daily_run.name
+  arn      = aws_sfn_state_machine.api_pipeline.arn
+  role_arn = aws_iam_role.eventbridge_role.arn
 }

@@ -24,7 +24,7 @@ resource "aws_glue_job" "extract_api_job" {
 # 2nd glue job
 resource "aws_glue_job" "transform_job" {
 
-  name     = "transform-json-parquet-job"
+  name = "transform-json-parquet-job"
 
   role_arn = aws_iam_role.glue_role.arn
 
@@ -36,7 +36,7 @@ resource "aws_glue_job" "transform_job" {
   command {
 
     script_location = "s3://${aws_s3_bucket.data_bucket.bucket}/scripts/transform_json_parquet.py"
-    python_version = "3"
+    python_version  = "3"
   }
 
   default_arguments = {
@@ -55,6 +55,10 @@ resource "aws_glue_job" "load_mysql" {
   command {
     script_location = "s3://${aws_s3_bucket.data_bucket.bucket}/scripts/load_mysql.py"
     python_version  = "3"
+  }
+
+  default_arguments = {
+    "--TARGET_BUCKET" = "api-etl-project-bucket"
   }
 
   glue_version      = "4.0"

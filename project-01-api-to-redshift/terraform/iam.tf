@@ -121,3 +121,62 @@ resource "aws_iam_role" "step_function_role" {
     ]
   })
 }
+
+resource "aws_iam_role_policy" "step_function_glue_jobs" {
+  name = "${var.project_name}-step-function-glue-jobs"
+  role = aws_iam_role.step_function_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowGlueJobs"
+        Effect = "Allow"
+        Action = [
+          "glue:StartJobRun",
+          "glue:GetJobRun",
+          "glue:GetJobRuns",
+          "glue:BatchStopJobRun"
+        ]
+        Resource = [
+          aws_glue_job.extract_api_job.arn,
+          aws_glue_job.transform_job.arn,
+          aws_glue_job.load_mysql.arn
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role" "eventbridge_role" {
+  name = "${var.project_name}-eventbridge-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "events.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "eventbridge_start_step_function" {
+  name = "${var.project_name}-eventbridge-start-step-function"
+  role = aws_iam_role.eventbridge_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "states:StartExecution"
+        Resource = aws_sfn_state_machine.api_pipeline.arn
+      }
+    ]
+  })
+}

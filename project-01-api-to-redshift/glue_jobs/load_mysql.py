@@ -20,7 +20,7 @@ logger = glueContext.get_logger()
 bucket = args["TARGET_BUCKET"]
 
 #secret manager
-mysql_url = "jdbc:mysql://<MYSQL_HOST>:3306/api_etl"
+mysql_url = "jdbc:mysql://localhost:3306/api_etl"
 mysql_user = "root"
 mysql_password = "root"
 
@@ -60,6 +60,12 @@ for source_folder, target_table in tables.items():
     logger.info(
         f"Loading {target_table}"
     )
+
+    users_count = df.count()
+
+    if users_count == 0:
+        raise Exception("No users received from API")
+
 
     df.write \
         .format("jdbc") \
